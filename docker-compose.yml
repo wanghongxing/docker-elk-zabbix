@@ -31,9 +31,12 @@ services:
       - elasticsearch
 
   kibana:
+    # build:
+    #   context: kibana/
     image: docker.elastic.co/kibana/kibana:6.7.0
     volumes:
       - ./kibana/config/:/usr/share/kibana/config:ro
+      - ./kibana/translations/:/usr/share/kibana/src/legacy/core_plugins/kibana/translations
     ports:
       - "5601:5601"
     networks:
