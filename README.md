@@ -1,80 +1,15 @@
-# Elastic stack (ELK) on Docker
+# Elastic stack (ELK) and zibbix on Docker
+ 
 
-[![Join the chat at https://gitter.im/deviantony/docker-elk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/deviantony/docker-elk?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Elastic Stack version](https://img.shields.io/badge/ELK-6.7.0-blue.svg?style=flat)](https://github.com/deviantony/docker-elk/issues/376)
-[![Build Status](https://api.travis-ci.org/deviantony/docker-elk.svg?branch=master)](https://travis-ci.org/deviantony/docker-elk)
 
-Run the latest version of the [Elastic stack](https://www.elastic.co/elk-stack) with Docker and Docker Compose.
-
-It will give you the ability to analyze any data set by using the searching/aggregation capabilities of Elasticsearch
-and the visualization power of Kibana.
-
-Based on the official Docker images from Elastic:
-
-* [elasticsearch](https://github.com/elastic/elasticsearch-docker)
-* [logstash](https://github.com/elastic/logstash-docker)
-* [kibana](https://github.com/elastic/kibana-docker)
-
-**Note**: Other branches in this project are available:
-
-* [`x-pack`](https://github.com/deviantony/docker-elk/tree/x-pack): X-Pack support
-* [`searchguard`](https://github.com/deviantony/docker-elk/tree/searchguard): Search Guard support
-* [`vagrant`](https://github.com/deviantony/docker-elk/tree/vagrant): run Docker inside Vagrant
-
-## Contents
-
-1. [Requirements](#requirements)
-   * [Host setup](#host-setup)
-   * [SELinux](#selinux)
-   * [Docker for Windows](#docker-for-windows)
-2. [Usage](#usage)
-   * [Bringing up the stack](#bringing-up-the-stack)
-   * [Initial setup](#initial-setup)
-3. [Configuration](#configuration)
-   * [How can I tune the Kibana configuration?](#how-can-i-tune-the-kibana-configuration)
-   * [How can I tune the Logstash configuration?](#how-can-i-tune-the-logstash-configuration)
-   * [How can I tune the Elasticsearch configuration?](#how-can-i-tune-the-elasticsearch-configuration)
-   * [How can I scale out the Elasticsearch cluster?](#how-can-i-scale-out-the-elasticsearch-cluster)
-4. [Storage](#storage)
-   * [How can I persist Elasticsearch data?](#how-can-i-persist-elasticsearch-data)
-5. [Extensibility](#extensibility)
-   * [How can I add plugins?](#how-can-i-add-plugins)
-   * [How can I enable the provided extensions?](#how-can-i-enable-the-provided-extensions)
-6. [JVM tuning](#jvm-tuning)
-   * [How can I specify the amount of memory used by a service?](#how-can-i-specify-the-amount-of-memory-used-by-a-service)
-   * [How can I enable a remote JMX connection to a service?](#how-can-i-enable-a-remote-jmx-connection-to-a-service)
-7. [Going further](#going-further)
-   * [Using a newer stack version](#using-a-newer-stack-version)
-   * [Plugins and integrations](#plugins-and-integrations)
-   * [Docker Swarm](#docker-swarm)
-
-## Requirements
-
-### Host setup
-
-1. Install [Docker](https://www.docker.com/community-edition#/download) version **17.05+**
-2. Install [Docker Compose](https://docs.docker.com/compose/install/) version **1.6.0+**
-3. Clone this repository
-
-### SELinux
-
-On distributions which have SELinux enabled out-of-the-box you will need to either re-context the files or set SELinux
-into Permissive mode in order for docker-elk to start properly. For example on Redhat and CentOS, the following will
-apply the proper context:
-
-```console
-$ chcon -R system_u:object_r:admin_home_t:s0 docker-elk/
-```
-
-### Docker for Windows
-
-If you're using Docker for Windows, ensure the "Shared Drives" feature is enabled for the `C:` drive (Docker for Windows > Settings > Shared Drives). See [Configuring Docker for Windows Shared Drives](https://blogs.msdn.microsoft.com/stevelasker/2016/06/14/configuring-docker-for-windows-volumes/) (MSDN Blog).
+## 说明 
+ 此项目参考   https://github.com/deviantony/docker-elk.git 项目，增加了zabbix。
+ 目的就是为了服务器监控和日志查看分析放在一起
 
 ## Usage
 
 ### Bringing up the stack
 
-**Note**: In case you switched branch or updated a base image - you may need to run `docker-compose build` first
 
 Start the stack using `docker-compose`:
 
@@ -92,11 +27,9 @@ By default, the stack exposes the following ports:
 * 9200: Elasticsearch HTTP
 * 9300: Elasticsearch TCP transport
 * 5601: Kibana
+* 80: Kibana /zabbix/
 
-**WARNING**: If you're using `boot2docker`, you must access it via the `boot2docker` IP address instead of `localhost`.
 
-**WARNING**: If you're using *Docker Toolbox*, you must access it via the `docker-machine` IP address instead of
-`localhost`.
 
 Now that the stack is running, you will want to inject some log entries. The shipped Logstash configuration allows you
 to send content via TCP:
@@ -201,22 +134,6 @@ This will store Elasticsearch data inside `/path/to/storage`.
 
 ## Extensibility
 
-### How can I add plugins?
-
-To add plugins to any ELK component you have to:
-
-1. Add a `RUN` statement to the corresponding `Dockerfile` (eg. `RUN logstash-plugin install logstash-filter-json`)
-2. Add the associated plugin code configuration to the service configuration (eg. Logstash input/output)
-3. Rebuild the images using the `docker-compose build` command
-
-### How can I enable the provided extensions?
-
-A few extensions are available inside the [`extensions`](extensions) directory. These extensions provide features which
-are not part of the standard Elastic stack, but can be used to enrich it with extra integrations.
-
-The documentation for these extensions is provided inside each individual subdirectory, on a per-extension basis. Some
-of them require manual changes to the default ELK configuration.
-
 ## JVM tuning
 
 ### How can I specify the amount of memory used by a service?
@@ -262,42 +179,4 @@ logstash:
     LS_JAVA_OPTS: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=18080 -Dcom.sun.management.jmxremote.rmi.port=18080 -Djava.rmi.server.hostname=DOCKER_HOST_IP -Dcom.sun.management.jmxremote.local.only=false"
 ```
 
-## Going further
-
-### Using a newer stack version
-
-To use a different Elastic Stack version than the one currently available in the repository, simply change the version
-number inside the `.env` file, and rebuild the stack with:
-
-```console
-$ docker-compose build
-$ docker-compose up
-```
-
-**NOTE**: Always pay attention to the [upgrade instructions](https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-upgrade.html)
-for each individual component before performing a stack upgrade.
-
-### Plugins and integrations
-
-See the following Wiki pages:
-
-* [External applications](https://github.com/deviantony/docker-elk/wiki/External-applications)
-* [Popular integrations](https://github.com/deviantony/docker-elk/wiki/Popular-integrations)
-
-### Docker Swarm
-
-Experimental support for Docker Swarm is provided in the form of a `docker-stack.yml` file, which can be deployed in an
-existing Swarm cluster using the following command:
-
-```console
-$ docker stack deploy -c docker-stack.yml elk
-```
-
-If all components get deployed without any error, the following command will show 3 running services:
-
-```console
-$ docker stack services elk
-```
-
-**NOTE:** to scale Elasticsearch in Swarm mode, configure *zen* to use the DNS name `tasks.elasticsearch` instead of
-`elasticsearch`.
+ 
