@@ -57,7 +57,7 @@ services:
 
   zabbix-mysql:
     image: mysql:5.7.19
-    container_name: zabbix-mysql
+    # container_name: zabbix-mysql
     ports: 
       - '3306'
     networks:
@@ -68,7 +68,7 @@ services:
       - ./mysql_data:/var/lib/mysql
   zabbix-web-nginx-mysql:
     image: zabbix/zabbix-web-nginx-mysql:centos-4.2.1
-    container_name: zabbix-web-nginx-mysql
+    # container_name: zabbix-web-nginx-mysql
     volumes:
       - ./zabbix/simkai.ttf:/usr/share/zabbix/fonts/simkai.ttf 
       - ./zabbix/defines.inc.php:/usr/share/zabbix/include/defines.inc.php
@@ -88,11 +88,12 @@ services:
     links:
       - zabbix-mysql
       - zabbix-server-mysql
+      - kibana
     depends_on:
       - zabbix-mysql
   zabbix-server-mysql:
     image: zabbix/zabbix-server-mysql:centos-4.2.1
-    container_name: zabbix-server-mysql
+    # container_name: zabbix-server-mysql
     environment:
       - DB_SERVER_HOST=zabbix-mysql
       - MYSQL_USER=root
