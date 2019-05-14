@@ -53,7 +53,59 @@ services:
     depends_on:
       - elasticsearch
 
-networks:
 
+
+  zabbix-mysql:
+    image: mysql:5.7.19
+    container_name: zabbix-mysql
+    ports: 
+      - '3306'
+    networks:
+      - elk
+    environment:
+      - MYSQL_ROOT_PASSWORD="123456"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+  zabbix-web-nginx-mysql:
+    image: zabbix/zabbix-web-nginx-mysql:centos-4.2.1
+    container_name: zabbix-web-nginx-mysql
+    volumes:
+      - ./zabbix/simkai.ttf:/usr/share/zabbix/fonts/simkai.ttf 
+      - ./zabbix/defines.inc.php:/usr/share/zabbix/include/defines.inc.php
+      - ./zabbix/nginx.conf:/etc/zabbix/nginx.conf
+    
+    environment:
+      - DB_SERVER_HOST=zabbix-mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD="123456"
+      - ZBX_SERVER_HOST=zabbix-server-mysql
+      - PHP_TZ=Asia/Shanghai
+    ports:
+      - '80:80'
+      - '443:443'
+    networks:
+      - elk
+    links:
+      - zabbix-mysql
+      - zabbix-server-mysql
+    depends_on:
+      - zabbix-mysql
+  zabbix-server-mysql:
+    image: zabbix/zabbix-server-mysql:centos-4.2.1
+    container_name: zabbix-server-mysql
+    environment:
+      - DB_SERVER_HOST=zabbix-mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD="123456"
+    ports:
+      - '10051:10051'
+    networks:
+      - elk
+    links:
+      - zabbix-mysql
+    depends_on:
+      - zabbix-mysql
+
+networks:
   elk:
     driver: bridge

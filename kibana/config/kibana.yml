@@ -6,3 +6,8 @@ server.name: kibana
 server.host: "0"
 elasticsearch.url: http://elasticsearch:9200
 i18n.locale: "zh-CN"
+
+elasticsearch.username: "kibana"
+elasticsearch.password: "kibanapassword"
+
+# server.basePath: "/kibana"
