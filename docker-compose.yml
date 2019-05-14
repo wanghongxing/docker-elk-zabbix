@@ -66,6 +66,23 @@ services:
       - MYSQL_ROOT_PASSWORD="123456"
     volumes:
       - ./mysql_data:/var/lib/mysql
+  zabbix-server-mysql:
+    image: zabbix/zabbix-server-mysql:centos-4.2.1
+    # container_name: zabbix-server-mysql
+    environment:
+      - DB_SERVER_HOST=zabbix-mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD="123456"
+    ports:
+      - '10051:10051'
+    networks:
+      - elk
+    links:
+      - zabbix-mysql
+    depends_on:
+      - zabbix-mysql
+
+
   zabbix-web-nginx-mysql:
     image: zabbix/zabbix-web-nginx-mysql:centos-4.2.1
     # container_name: zabbix-web-nginx-mysql
@@ -73,6 +90,7 @@ services:
       - ./zabbix/simkai.ttf:/usr/share/zabbix/fonts/simkai.ttf 
       - ./zabbix/defines.inc.php:/usr/share/zabbix/include/defines.inc.php
       - ./zabbix/nginx.conf:/etc/zabbix/nginx.conf
+      - ./zabbix/htpasswd:/etc/nginx/.htpasswd
     
     environment:
       - DB_SERVER_HOST=zabbix-mysql
@@ -91,22 +109,6 @@ services:
       - kibana
     depends_on:
       - zabbix-mysql
-  zabbix-server-mysql:
-    image: zabbix/zabbix-server-mysql:centos-4.2.1
-    # container_name: zabbix-server-mysql
-    environment:
-      - DB_SERVER_HOST=zabbix-mysql
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD="123456"
-    ports:
-      - '10051:10051'
-    networks:
-      - elk
-    links:
-      - zabbix-mysql
-    depends_on:
-      - zabbix-mysql
-
 networks:
   elk:
     driver: bridge
