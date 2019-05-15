@@ -33,6 +33,8 @@ kibana:
     - ./kibana/translations/:/usr/share/kibana/src/legacy/core_plugins/kibana/translations
   ports:
     - "5601:5601"
+  links:
+    - elasticsearch
   # depends_on:
   #   - elasticsearch
 

@@ -1,0 +1,39 @@
+
+
+filebeat.autodiscover.providers:
+- type: docker
+  templates:
+  - condition:
+      contains:
+        docker.container.image: tb_eport
+    config:
+      - type: docker
+        containers.ids: "${data.docker.container.id}"
+  - condition:
+      contains:
+        docker.container.image: tb_platform
+    config:
+      - type: docker
+        containers.ids: "${data.docker.container.id}"
+
+  - condition:
+      contains:
+        docker.container.name: tb_trade
+    config:
+      - type: docker
+        containers.ids: "${data.docker.container.id}"
+
+filebeat.prospectors:
+
+- input_type: log
+  # Paths that should be crawled and fetched. Glob based paths.
+  paths:
+    - /etc/filebeat/download.2017-06-16-1125-1224.log
+
+
+output:
+  # logstash:
+  #   hosts: ["192.168.56.101:5044"]
+  elasticsearch:
+    # index: "whx"
+    hosts: ["http://127.0.0.1:9200"]
