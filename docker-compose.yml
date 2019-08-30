@@ -109,6 +109,15 @@ services:
       - kibana
     depends_on:
       - zabbix-mysql
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/data:/prometheus
+      - ./config:/etc/prometheus
+
+    ports:
+      - '9090:9090'
+
 networks:
   elk:
     driver: bridge
