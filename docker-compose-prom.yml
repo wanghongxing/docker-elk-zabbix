@@ -8,4 +8,4 @@ prometheus:
     - ./config:/etc/prometheus
 
   ports:
-    - '9090:9090'
+    - '9099:9090'

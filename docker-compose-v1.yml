@@ -23,7 +23,8 @@ logstash:
     LS_JAVA_OPTS: "-Xmx256m -Xms256m"
   # depends_on:
   #   - elasticsearch
-
+  links:
+    - elasticsearch
 kibana:
   # build:
   #   context: kibana/
