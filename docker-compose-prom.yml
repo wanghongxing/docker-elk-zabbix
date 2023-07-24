@@ -4,7 +4,7 @@
 prometheus:
   image: prom/prometheus
   volumes:
-    - ./prometheus/data:/prometheus
+    # - ./prometheus/data:/prometheus
     - ./prometheus/config:/etc/prometheus
 
   ports:
