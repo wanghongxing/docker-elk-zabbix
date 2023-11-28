@@ -3,7 +3,8 @@ version: '2'
 services:
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.7.0
+    image: elasticsearch:7.17.10
+    container_name: elasticsearch
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
     ports:
@@ -15,12 +16,13 @@ services:
       - elk
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:6.7.0
+    image: logstash:7.17.10
+    container_name: logstash
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
     ports:
-      - "5000:5000"
+      - "50000:5000"
       - "5044:5044"
       - "9600:9600"
     environment:
@@ -31,11 +33,10 @@ services:
       - elasticsearch
 
   kibana:
-    # build:
-    #   context: kibana/
-    image: docker.elastic.co/kibana/kibana:6.7.0
+    image: kibana:7.17.10
+    container_name: kibana
     volumes:
-      - ./kibana/config/:/usr/share/kibana/config:ro
+      - ./kibana/config/:/usr/share/kibana/config
       - ./kibana/translations/:/usr/share/kibana/src/legacy/core_plugins/kibana/translations
     ports:
       - "5601:5601"
@@ -44,22 +45,36 @@ services:
     depends_on:
       - elasticsearch
 
-  elasticsearch-head:
-    image: mobz/elasticsearch-head:5
+  grafana:
+    image: grafana/grafana:9.3.26
+    container_name: grafana
     ports:
-      - "9100:9100"
-    networks:
-      - elk
+      - "3000:3000"
+    environment:
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
     depends_on:
-      - elasticsearch
+      - prometheus
+    # healthcheck:
+    #   test: [ "CMD", "nc", "-z", "localhost", "3000" ]
+      
+  # elasticsearch-head:
+  #   image: mobz/elasticsearch-head:5
+  #   ports:
+  #     - "9100:9100"
+  #   networks:
+  #     - elk
+  #   depends_on:
+  #     - elasticsearch
 
 
 
   zabbix-mysql:
-    image: mysql:5.7.19
-    # container_name: zabbix-mysql
+    image: mysql:8.0.33
+    container_name: zabbix-mysql
     ports: 
-      - '3306'
+      - '3366:3306'
     networks:
       - elk
     environment:
@@ -67,8 +82,8 @@ services:
     volumes:
       - ./mysql_data:/var/lib/mysql
   zabbix-server-mysql:
-    image: zabbix/zabbix-server-mysql:centos-4.2.1
-    # container_name: zabbix-server-mysql
+    image: zabbix/zabbix-server-mysql:centos-5.0-latest
+    container_name: zabbix-server-mysql
     environment:
       - DB_SERVER_HOST=zabbix-mysql
       - MYSQL_USER=root
@@ -84,8 +99,8 @@ services:
 
 
   zabbix-web-nginx-mysql:
-    image: zabbix/zabbix-web-nginx-mysql:centos-4.2.1
-    # container_name: zabbix-web-nginx-mysql
+    image: zabbix/zabbix-web-nginx-mysql:centos-5.0-latest
+    container_name: zabbix-web-nginx-mysql
     volumes:
       - ./zabbix/simkai.ttf:/usr/share/zabbix/fonts/simkai.ttf 
       - ./zabbix/defines.inc.php:/usr/share/zabbix/include/defines.inc.php
@@ -111,12 +126,26 @@ services:
       - zabbix-mysql
   prometheus:
     image: prom/prometheus
+    container_name: prometheus
     volumes:
       - ./prometheus/data:/prometheus
-      - ./config:/etc/prometheus
+      - ./prometheus/config:/etc/prometheus
 
     ports:
       - '9090:9090'
+
+  grafana:
+    image: grafana/grafana:9.3.16
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_USERS_ALLOW_SIGN_UP=false
+    # volumes:
+    #   - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
 
 networks:
   elk:
